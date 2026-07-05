@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アーユルヴェーダ体質判定｜ドーシャ診断</title>
+<style>
+  :root{
+    --bg:#faf6ee;
+    --card:#ffffff;
+    --ink:#4a3f35;
+    --ink-light:#8a7d6f;
+    --accent:#b07d4f;
+    --accent-dark:#8f6239;
+    --vata:#7e8fc9;
+    --vata-bg:#eef1fa;
+    --pitta:#d97b4f;
+    --pitta-bg:#fdf0e8;
+    --kapha:#6fa287;
+    --kapha-bg:#ecf5f0;
+    --shadow:0 6px 24px rgba(90,70,50,.10);
+    --radius:18px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+    background:var(--bg);
+    background-image:radial-gradient(circle at 15% 20%, rgba(217,123,79,.06) 0%, transparent 40%),
+                     radial-gradient(circle at 85% 80%, rgba(111,162,135,.07) 0%, transparent 40%),
+                     radial-gradient(circle at 80% 15%, rgba(126,143,201,.06) 0%, transparent 35%);
+    color:var(--ink);
+    min-height:100vh;
+    line-height:1.7;
+  }
+  .container{max-width:680px;margin:0 auto;padding:24px 16px 60px;}
+  header{text-align:center;padding:28px 0 10px;}
+  header .lotus{font-size:38px;}
+  header h1{font-size:24px;letter-spacing:.08em;margin-top:6px;}
+  header p.sub{color:var(--ink-light);font-size:13px;margin-top:4px;letter-spacing:.05em;}
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:32px 28px;
+    margin-top:22px;
+  }
+  @media (max-width:480px){ .card{padding:24px 18px;} }
+
+  .hidden{display:none !important;}
+
+  /* ---- スタート画面 ---- */
+  #start-screen h2{font-size:19px;text-align:center;margin-bottom:16px;color:var(--accent-dark);}
+  #start-screen p{font-size:14.5px;margin-bottom:12px;}
+  .dosha-chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0;}
+  .chip{padding:10px 16px;border-radius:999px;font-size:13.5px;font-weight:bold;}
+  .chip.v{background:var(--vata-bg);color:var(--vata);}
+  .chip.p{background:var(--pitta-bg);color:var(--pitta);}
+  .chip.k{background:var(--kapha-bg);color:var(--kapha);}
+  .note{font-size:12px;color:var(--ink-light);margin-top:14px;}
+  .hint-box{
+    background:#fbf6ec;border-radius:12px;padding:14px 16px;
+    font-size:13.5px;margin:16px 0 4px;
+  }
+  .hint-box b{color:var(--accent-dark);}
+
+  .btn{
+    display:block;width:100%;
+    padding:15px;border:none;border-radius:999px;
+    background:linear-gradient(135deg,#c98f5e,#a96f3f);
+    color:#fff;font-size:16px;font-weight:bold;letter-spacing:.1em;
+    cursor:pointer;margin-top:22px;
+    box-shadow:0 4px 14px rgba(169,111,63,.35);
+    transition:transform .15s, box-shadow .15s;
+    font-family:inherit;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(169,111,63,.45);}
+  .btn.secondary{
+    background:#fff;color:var(--accent-dark);
+    border:2px solid var(--accent);box-shadow:none;
+  }
+
+  /* ---- 質問画面 ---- */
+  .progress-wrap{margin-bottom:20px;}
+  .progress-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-light);margin-bottom:6px;}
+  .progress-bar{height:8px;background:#efe7db;border-radius:99px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#c98f5e,#a96f3f);border-radius:99px;width:0;transition:width .3s ease;}
+  .q-category{
+    display:inline-block;font-size:12px;font-weight:bold;color:var(--accent-dark);
+    background:#f5ead9;padding:4px 14px;border-radius:99px;margin-bottom:12px;letter-spacing:.05em;
+  }
+  .q-lead{font-size:12.5px;color:var(--ink-light);margin-bottom:6px;}
+  .q-text{font-size:18px;font-weight:bold;margin-bottom:20px;min-height:3.2em;}
+  .option{
+    display:block;width:100%;text-align:left;
+    background:#fdfaf5;border:2px solid #ece2d3;border-radius:14px;
+    padding:12px 18px;font-size:14.5px;color:var(--ink);
+    cursor:pointer;margin-bottom:9px;line-height:1.5;
+    transition:border-color .15s, background .15s, transform .1s;
+    font-family:inherit;
+  }
+  .option:hover{border-color:var(--accent);background:#fbf3e6;transform:translateX(3px);}
+  .option.selected{border-color:var(--accent);background:#f8edda;}
+  .option .deg{font-weight:bold;margin-right:8px;}
+  .btn-back{
+    background:none;border:none;color:var(--ink-light);font-size:13.5px;
+    cursor:pointer;margin-top:18px;padding:6px;font-family:inherit;
+  }
+  .btn-back:hover{color:var(--accent-dark);text-decoration:underline;}
+
+  /* ---- 結果画面 ---- */
+  .result-heading{text-align:center;font-size:14px;color:var(--ink-light);letter-spacing:.15em;}
+  .result-type{
+    text-align:center;font-size:27px;font-weight:bold;margin:8px 0 4px;letter-spacing:.05em;
+  }
+  .result-dominant{
+    text-align:center;font-size:13.5px;font-weight:bold;color:var(--accent-dark);margin-bottom:2px;
+  }
+  .result-sub{text-align:center;font-size:13.5px;color:var(--ink-light);margin-bottom:24px;}
+  .bar-row{margin-bottom:16px;}
+  .bar-head{display:flex;justify-content:space-between;font-size:14px;font-weight:bold;margin-bottom:5px;}
+  .bar-track{height:14px;background:#f0eae0;border-radius:99px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:99px;width:0;transition:width 1s cubic-bezier(.22,1,.36,1);}
+  .bar-fill.v{background:linear-gradient(90deg,#9daede,#7e8fc9);}
+  .bar-fill.p{background:linear-gradient(90deg,#e89b73,#d97b4f);}
+  .bar-fill.k{background:linear-gradient(90deg,#8fbca4,#6fa287);}
+  .c-vata{color:var(--vata);} .c-pitta{color:var(--pitta);} .c-kapha{color:var(--kapha);}
+
+  .result-comment{
+    background:#fbf6ec;border-left:4px solid var(--accent);
+    border-radius:0 12px 12px 0;padding:16px 18px;font-size:14px;margin:22px 0 6px;
+  }
+
+  /* ---- 解説アコーディオン ---- */
+  .section-title{
+    text-align:center;font-size:17px;font-weight:bold;color:var(--accent-dark);
+    margin:34px 0 6px;letter-spacing:.08em;
+  }
+  .section-sub{text-align:center;font-size:12.5px;color:var(--ink-light);margin-bottom:16px;}
+  details.dosha{
+    border-radius:14px;margin-bottom:14px;overflow:hidden;
+    border:2px solid transparent;background:var(--card);box-shadow:var(--shadow);
+  }
+  details.dosha.v{border-color:#dfe5f5;}
+  details.dosha.p{border-color:#f7e0d2;}
+  details.dosha.k{border-color:#d9ebe1;}
+  details.dosha summary{
+    list-style:none;cursor:pointer;padding:16px 20px;
+    font-size:16px;font-weight:bold;display:flex;align-items:center;gap:10px;
+    user-select:none;
+  }
+  details.dosha summary::-webkit-details-marker{display:none;}
+  details.dosha summary .mark{margin-left:auto;transition:transform .2s;font-size:13px;color:var(--ink-light);}
+  details.dosha[open] summary .mark{transform:rotate(180deg);}
+  details.dosha.v summary{background:var(--vata-bg);color:var(--vata);}
+  details.dosha.p summary{background:var(--pitta-bg);color:var(--pitta);}
+  details.dosha.k summary{background:var(--kapha-bg);color:var(--kapha);}
+  .dosha-body{padding:18px 20px 22px;font-size:14px;}
+  .dosha-body h4{
+    font-size:13.5px;margin:16px 0 6px;padding-left:10px;border-left:4px solid;
+  }
+  .dosha-body h4:first-child{margin-top:0;}
+  details.v .dosha-body h4{border-color:var(--vata);color:var(--vata);}
+  details.p .dosha-body h4{border-color:var(--pitta);color:var(--pitta);}
+  details.k .dosha-body h4{border-color:var(--kapha);color:var(--kapha);}
+  .dosha-body ul{padding-left:20px;margin:4px 0;}
+  .dosha-body li{margin-bottom:3px;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px;}
+  .tag{font-size:12px;padding:3px 12px;border-radius:99px;background:#f3ede2;color:var(--ink-light);}
+
+  footer{text-align:center;font-size:11.5px;color:#b5a894;margin-top:40px;line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="lotus">🪷</div>
+    <h1>アーユルヴェーダ体質判定</h1>
+    <p class="sub">〜 あなたのドーシャ（生命エネルギー）を知る 〜</p>
+  </header>
+
+  <!-- スタート画面 -->
+  <div class="card" id="start-screen">
+    <h2>あなたの体質タイプを診断します</h2>
+    <p>アーユルヴェーダは約5000年の歴史を持つインドの伝統医学です。人の心身は<b>「ヴァータ（風）」「ピッタ（火）」「カパ（水）」</b>という3つの生命エネルギー（ドーシャ）のバランスで成り立つと考えられています。</p>
+    <div class="dosha-chips">
+      <span class="chip v">🌬 ヴァータ（風・空）</span>
+      <span class="chip p">🔥 ピッタ（火・水）</span>
+      <span class="chip k">💧 カパ（水・地）</span>
+    </div>
+    <p>45の記述それぞれについて、自分にどのくらいあてはまるかを<b>「あてはまる」〜「あてはまらない」の5段階</b>で答えてください（各ドーシャ15項目）。</p>
+    <div class="hint-box">
+      <b>正確に判定するコツ</b><br>
+      ・「今の状態」ではなく、<b>子どもの頃から続く長期的な傾向</b>で答える<br>
+      ・迷ったら深く考えず直感で。「あてはまらない」も遠慮なく選ぶ<br>
+      ・体調不良やダイエット中など、一時的な状態は除いて考える
+    </div>
+    <p class="note">※ この診断はセルフチェックの目安であり、医学的な診断に代わるものではありません。</p>
+    <button class="btn" onclick="startQuiz()">診断をはじめる</button>
+  </div>
+
+  <!-- 質問画面 -->
+  <div class="card hidden" id="quiz-screen">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-text">質問 1 / 45</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <span class="q-category" id="q-category"></span>
+    <p class="q-lead">次の記述は、あなたにどのくらいあてはまりますか？</p>
+    <div class="q-text" id="q-text"></div>
+    <div id="options"></div>
+    <button class="btn-back" id="btn-back" onclick="goBack()">← 前の質問に戻る</button>
+  </div>
+
+  <!-- 結果画面 -->
+  <div class="card hidden" id="result-screen">
+    <p class="result-heading">— 診断結果 —</p>
+    <div class="result-type" id="result-type"></div>
+    <div class="result-dominant" id="result-dominant"></div>
+    <p class="result-sub" id="result-sub"></p>
+
+    <div class="bar-row">
+      <div class="bar-head c-vata"><span>🌬 ヴァータ</span><span id="pct-v">0%</span></div>
+      <div class="bar-track"><div class="bar-fill v" id="bar-v"></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-head c-pitta"><span>🔥 ピッタ</span><span id="pct-p">0%</span></div>
+      <div class="bar-track"><div class="bar-fill p" id="bar-p"></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-head c-kapha"><span>💧 カパ</span><span id="pct-k">0%</span></div>
+      <div class="bar-track"><div class="bar-fill k" id="bar-k"></div></div>
+    </div>
+
+    <div class="result-comment" id="result-comment"></div>
+    <button class="btn secondary" onclick="restart()">もう一度診断する</button>
+  </div>
+
+  <!-- ドーシャ解説（結果画面で表示） -->
+  <div id="explain-area" class="hidden">
+    <div class="section-title">3つのドーシャ解説</div>
+    <p class="section-sub">タップ（クリック）すると詳しい解説が開きます</p>
+
+    <details class="dosha v" id="detail-v">
+      <summary>🌬 ヴァータ（Vata）― 風のエネルギー <span class="mark">▼</span></summary>
+      <div class="dosha-body">
+        <div class="tag-row">
+          <span class="tag">元素：風・空</span><span class="tag">性質：軽・冷・乾・動</span><span class="tag">キーワード：動き・変化・創造性</span>
+        </div>
+        <h4>特徴</h4>
+        <p>体内の「動き」を司るエネルギーです。呼吸・血流・神経の伝達・排泄など、あらゆる運動機能に関わります。ヴァータ体質の人は、痩せ型で手足が細く、肌や髪が乾燥しやすい傾向があります。頭の回転が速く、想像力・発想力が豊かで、行動も会話もスピーディー。新しいことが大好きで、環境の変化にもすぐ順応します。</p>
+        <h4>バランスが取れているとき</h4>
+        <ul>
+          <li>明るく快活で、創造性・ひらめきにあふれる</li>
+          <li>理解が早く、フットワークが軽い</li>
+          <li>好奇心旺盛で、人を楽しませるムードメーカーになる</li>
+        </ul>
+        <h4>バランスが乱れると</h4>
+        <ul>
+          <li>不安・心配・緊張が強くなり、気分が変わりやすい</li>
+          <li>不眠・便秘・冷え・肌の乾燥・疲れやすさが出る</li>
+          <li>集中力が続かず、物事が長続きしない</li>
+        </ul>
+        <h4>食事のポイント</h4>
+        <p>温かく消化の良い食事が基本です。スープ・煮込み料理・温かい飲み物、良質な油（ギー・ごま油）がおすすめ。甘味・酸味・塩味を適度に取り入れ、生野菜や冷たい飲食物、カフェインの摂りすぎは控えめに。</p>
+        <h4>生活のポイント</h4>
+        <p>ヴァータを整えるカギは<b>「規則正しさ」と「休息」</b>。毎日同じ時間に食事・睡眠をとり、予定を詰め込みすぎないこと。オイルマッサージ（アビヤンガ）、ゆったりしたヨガ、深呼吸、早寝が効果的です。体を冷やさず、温かくして過ごしましょう。</p>
+      </div>
+    </details>
+
+    <details class="dosha p" id="detail-p">
+      <summary>🔥 ピッタ（Pitta）― 火のエネルギー <span class="mark">▼</span></summary>
+      <div class="dosha-body">
+        <div class="tag-row">
+          <span class="tag">元素：火・水</span><span class="tag">性質：熱・鋭・軽・液</span><span class="tag">キーワード：変換・情熱・知性</span>
+        </div>
+        <h4>特徴</h4>
+        <p>体内の「変換・代謝」を司るエネルギーです。消化・体温維持・ホルモン・知的活動に関わります。ピッタ体質の人は中肉中背で筋肉がつきやすく、体が温かく汗をかきやすい傾向があります。知的で論理的、リーダーシップがあり、目標に向かって計画的に突き進む情熱家。食欲・消化力が旺盛なのも特徴です。</p>
+        <h4>バランスが取れているとき</h4>
+        <ul>
+          <li>集中力・決断力・実行力に優れ、目標を達成できる</li>
+          <li>知的で話が明快、頼れるリーダーになる</li>
+          <li>消化力が高く、エネルギッシュに活動できる</li>
+        </ul>
+        <h4>バランスが乱れると</h4>
+        <ul>
+          <li>イライラ・怒りっぽさ・批判的な態度が強まる</li>
+          <li>胸やけ・胃炎・下痢・肌の炎症（湿疹・ニキビ）が出やすい</li>
+          <li>完璧主義になりすぎて、自分にも他人にも厳しくなる</li>
+        </ul>
+        <h4>食事のポイント</h4>
+        <p>体の熱を鎮める、甘味・苦味・渋味のある食材がおすすめ。旬の野菜や果物、ココナッツ、ミントなど清涼感のあるものが合います。辛いもの・揚げ物・アルコール・塩分の摂りすぎは火を強めるので控えめに。空腹を我慢しすぎないことも大切です。</p>
+        <h4>生活のポイント</h4>
+        <p>ピッタを整えるカギは<b>「クールダウン」と「ゆとり」</b>。頑張りすぎず、勝ち負けから離れる時間を持ちましょう。月光浴や森林浴、水辺の散歩、涼しい環境での休息が効果的。予定に余白をつくり、「まあいいか」と手放す練習を。</p>
+      </div>
+    </details>
+
+    <details class="dosha k" id="detail-k">
+      <summary>💧 カパ（Kapha）― 水のエネルギー <span class="mark">▼</span></summary>
+      <div class="dosha-body">
+        <div class="tag-row">
+          <span class="tag">元素：水・地</span><span class="tag">性質：重・冷・遅・安定</span><span class="tag">キーワード：構造・持久力・愛情</span>
+        </div>
+        <h4>特徴</h4>
+        <p>体の「構造と安定」を司るエネルギーです。体力・免疫力・体の潤い・結合組織に関わります。カパ体質の人は骨格がしっかりしてグラマー、肌はしっとりなめらかで、体力・持久力に優れています。性格は穏やかで辛抱強く、愛情深い平和主義者。一度覚えたことは忘れない優れた長期記憶の持ち主です。</p>
+        <h4>バランスが取れているとき</h4>
+        <ul>
+          <li>おおらかで包容力があり、周囲に安心感を与える</li>
+          <li>体力・持久力・免疫力が高く、丈夫で疲れにくい</li>
+          <li>着実に物事をやり遂げる粘り強さがある</li>
+        </ul>
+        <h4>バランスが乱れると</h4>
+        <ul>
+          <li>体が重くだるい、眠気が強い、やる気が出ない</li>
+          <li>体重増加・むくみ・鼻炎・痰などが出やすい</li>
+          <li>執着心・所有欲が強まり、変化を避けて停滞しがち</li>
+        </ul>
+        <h4>食事のポイント</h4>
+        <p>軽くて温かく、スパイスの効いた食事がおすすめ。辛味・苦味・渋味（生姜・胡椒・ターメリック・葉物野菜）がカパの重さを軽くします。甘いもの・乳製品・油もの・冷たいものの摂りすぎ、食べ過ぎ・間食に注意。少食でも十分エネルギーを保てる体質です。</p>
+        <h4>生活のポイント</h4>
+        <p>カパを整えるカギは<b>「刺激」と「運動」</b>。朝は早く起き、しっかり体を動かして汗をかきましょう。新しいことへの挑戦、旅行、模様替えなど、変化を意識的に取り入れるのが効果的。昼寝は控えめにして、活動的な毎日を心がけると本来の力が発揮されます。</p>
+      </div>
+    </details>
+  </div>
+
+  <footer>
+    アーユルヴェーダ体質判定（セルフチェック）<br>
+    ※ 本アプリは健康・医療上の診断を目的とするものではありません。
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ================= 質問データ =================
+   各ドーシャ15項目（計45問）の記述に
+   あてはまり度（4〜0点の5段階）で答える方式。
+   d: v=ヴァータ / p=ピッタ / k=カパ
+   出題はv→p→kの順に交互（回答者にどのドーシャの
+   質問か分からないようにするため）                  */
+const STATEMENTS = [
+  { cat:"からだ", d:"v", t:"痩せ型で、もともと体重が増えにくい" },
+  { cat:"からだ", d:"p", t:"汗っかきで、暑さや夏が苦手" },
+  { cat:"からだ", d:"k", t:"生まれつき骨格がしっかりした、がっしり体型" },
+  { cat:"からだ", d:"v", t:"手足の血管（静脈）が浮き出て見えやすい" },
+  { cat:"からだ", d:"p", t:"食欲旺盛で、空腹になると機嫌が悪くなる" },
+  { cat:"からだ", d:"k", t:"太りやすく、いったん太ると痩せにくい" },
+  { cat:"からだ", d:"v", t:"肌が乾燥しやすく、特に冬はカサカサになる" },
+  { cat:"からだ", d:"p", t:"胸やけや口内炎がよく起こる" },
+  { cat:"からだ", d:"k", t:"食事を1回抜いても平気で我慢できる" },
+  { cat:"からだ", d:"v", t:"冷え性で手足が冷たく、寒さを感じやすい" },
+  { cat:"からだ", d:"p", t:"顔色や肌の色に、赤みや黄みが強い" },
+  { cat:"からだ", d:"k", t:"髪が黒々として量が多く、しっとりしている" },
+  { cat:"からだ", d:"v", t:"便秘しがちで、お腹にガスが溜まりやすい" },
+  { cat:"からだ", d:"p", t:"便は柔らかめで、1日2回以上出ることが多い" },
+  { cat:"からだ", d:"k", t:"どこでもすぐ、ぐっすり深く眠れる" },
+  { cat:"からだ", d:"v", t:"眠りが浅く、途中で目が覚めやすい" },
+  { cat:"からだ", d:"p", t:"冷たい飲み物が好き" },
+  { cat:"からだ", d:"k", t:"肌が柔らかくなめらかで、色白なほう" },
+  { cat:"からだ", d:"v", t:"関節がポキポキ鳴りやすい" },
+  { cat:"からだ", d:"p", t:"若い頃から白髪・薄毛・シワが目立ち始めた" },
+  { cat:"からだ", d:"k", t:"歯が丈夫で大きさが揃っており、虫歯が少ない" },
+  { cat:"からだ", d:"v", t:"歯の大きさが不揃いで、歯並びが良くないほう" },
+  { cat:"からだ", d:"p", t:"日焼けしやすく、ホクロやそばかすが多い" },
+  { cat:"からだ", d:"k", t:"体力があり、激しい運動や労働にもよく耐えられる" },
+  { cat:"からだ", d:"v", t:"食欲や食事の量が日によってバラバラ" },
+  { cat:"からだ", d:"p", t:"目つきが鋭いと言われる。目が充血しやすい" },
+  { cat:"からだ", d:"k", t:"湿気の多い寒い気候が苦手で、鼻水・鼻づまりが出やすい" },
+  { cat:"こころ・行動", d:"v", t:"動作や歩くのが速く、早口だと言われる" },
+  { cat:"こころ・行動", d:"p", t:"自己主張がはっきりしていて、リーダー役に向いている" },
+  { cat:"こころ・行動", d:"k", t:"歩くのも食べるのもゆっくりしている" },
+  { cat:"こころ・行動", d:"v", t:"覚えるのは早いが、忘れるのも早い" },
+  { cat:"こころ・行動", d:"p", t:"短気でイライラしやすく、怒りっぽい" },
+  { cat:"こころ・行動", d:"k", t:"覚えるのはゆっくりだが、一度覚えたら忘れない" },
+  { cat:"こころ・行動", d:"v", t:"好奇心旺盛で何にでも興味を持つが、長続きしない" },
+  { cat:"こころ・行動", d:"p", t:"話し方や行動に無駄がなく、弁が立つと言われる" },
+  { cat:"こころ・行動", d:"k", t:"めったにイライラせず、集中力が持続する" },
+  { cat:"こころ・行動", d:"v", t:"何かを決めるとき、くよくよ迷いがち" },
+  { cat:"こころ・行動", d:"p", t:"完璧主義で、自分にも他人にも厳しい" },
+  { cat:"こころ・行動", d:"k", t:"引っ込み思案で、恥ずかしがり屋なほう" },
+  { cat:"こころ・行動", d:"v", t:"座っていても手足や体をつい動かしてしまう" },
+  { cat:"こころ・行動", d:"p", t:"議論や競争では負けたくない" },
+  { cat:"こころ・行動", d:"k", t:"食べることが大好きで、食事にお金をかける" },
+  { cat:"こころ・行動", d:"v", t:"新しい環境にすぐ溶け込める" },
+  { cat:"こころ・行動", d:"p", t:"集中力があり、目標達成への意欲が強い" },
+  { cat:"こころ・行動", d:"k", t:"心が穏やかで、めったに怒らない" }
+];
+
+/* あてはまり度の選択肢（5段階・点数） */
+const RATINGS = [
+  { deg:"❺", label:"あてはまる", score:4 },
+  { deg:"❹", label:"まあまああてはまる", score:3 },
+  { deg:"❸", label:"どちらともいえない", score:2 },
+  { deg:"❷", label:"あまりあてはまらない", score:1 },
+  { deg:"❶", label:"あてはまらない", score:0 }
+];
+
+const DOSHA_NAME = { v:"ヴァータ", p:"ピッタ", k:"カパ" };
+
+/* ================= タイプ判定用テキスト ================= */
+const TYPE_INFO = {
+  v:  { name:"ヴァータ体質", cls:"c-vata",
+        comment:"あなたは<b>風のエネルギー「ヴァータ」</b>が優勢なタイプ。軽やかで創造的、変化を楽しめる人です。一方で、疲れや不規則な生活の影響を受けやすいので、「規則正しい生活」「温かい食事」「十分な休息」を意識するとバランスが整います。下の解説で詳しいセルフケアを確認しましょう。" },
+  p:  { name:"ピッタ体質", cls:"c-pitta",
+        comment:"あなたは<b>火のエネルギー「ピッタ」</b>が優勢なタイプ。情熱的で知的、目標達成力に優れた人です。一方で、頑張りすぎて熱がこもるとイライラや胃腸の不調につながりやすいので、「クールダウンの時間」「刺激物を控えた食事」「ゆとりある予定」を意識するとバランスが整います。" },
+  k:  { name:"カパ体質", cls:"c-kapha",
+        comment:"あなたは<b>水のエネルギー「カパ」</b>が優勢なタイプ。穏やかで辛抱強く、体力と包容力に恵まれた人です。一方で、安定を好むあまり停滞すると重だるさや体重増加につながりやすいので、「朝の運動」「軽めの食事」「新しい刺激」を意識するとバランスが整います。" },
+  vp: { name:"ヴァータ・ピッタ体質", cls:"",
+        comment:"あなたは<b>「ヴァータ（風）」と「ピッタ（火）」</b>の2つが強い複合タイプ。行動力・発想力・知性を兼ね備え、スピーディーに物事を進められる人です。ただし心身ともに「動きすぎ・熱くなりすぎ」になりやすいので、意識的に休息と冷却を。温かく消化の良い食事をとり、刺激物は控えめに。両方の解説を参考にしてください。" },
+  pk: { name:"ピッタ・カパ体質", cls:"",
+        comment:"あなたは<b>「ピッタ（火）」と「カパ（水）」</b>の2つが強い複合タイプ。実行力と持久力を兼ね備え、着実に成果を出せる安定感のある人です。体力に恵まれる反面、食べ過ぎ・運動不足が続くと重さと熱の両方が溜まりやすいので、適度な運動とあっさりした食事を心がけて。両方の解説を参考にしてください。" },
+  vk: { name:"ヴァータ・カパ体質", cls:"",
+        comment:"あなたは<b>「ヴァータ（風）」と「カパ（水）」</b>の2つが強い複合タイプ。繊細さと穏やかさを併せ持ち、活発な面とゆったりした面が状況で入れ替わる人です。どちらも「冷」の性質を持つため、冷えが大敵。体を温める食事・入浴・軽い運動を習慣にすると調子が安定します。両方の解説を参考にしてください。" },
+  vpk:{ name:"トリドーシャ体質", cls:"",
+        comment:"あなたは<b>3つのドーシャがほぼ均等</b>な、めずらしいバランス型（トリドーシャ）です。心身の適応力が高く、環境の変化にも柔軟に対応できます。季節や生活リズムの乱れによってその時々で崩れるドーシャが変わるので、「今どのドーシャが乱れているか」を観察しながら3つの解説をセルフケアに役立ててください。" }
+};
+
+/* ================= 状態 ================= */
+let current = 0;
+const answers = new Array(STATEMENTS.length).fill(null);
+
+const $ = id => document.getElementById(id);
+
+function startQuiz(){
+  current = 0;
+  answers.fill(null);
+  $("start-screen").classList.add("hidden");
+  $("result-screen").classList.add("hidden");
+  $("explain-area").classList.add("hidden");
+  $("quiz-screen").classList.remove("hidden");
+  renderQuestion();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function renderQuestion(){
+  const s = STATEMENTS[current];
+  $("progress-text").textContent = `質問 ${current+1} / ${STATEMENTS.length}`;
+  const pct = Math.round(current / STATEMENTS.length * 100);
+  $("progress-pct").textContent = pct + "%";
+  $("progress-fill").style.width = pct + "%";
+  $("q-category").textContent = s.cat;
+  $("q-text").textContent = `Q${current+1}. ${s.t}`;
+
+  const box = $("options");
+  box.innerHTML = "";
+  RATINGS.forEach((r, i) => {
+    const btn = document.createElement("button");
+    btn.className = "option" + (answers[current] === i ? " selected" : "");
+    btn.innerHTML = `<span class="deg">${r.deg}</span>${r.label}`;
+    btn.onclick = () => selectOption(i);
+    box.appendChild(btn);
+  });
+  $("btn-back").style.visibility = current === 0 ? "hidden" : "visible";
+}
+
+function selectOption(i){
+  answers[current] = i;
+  // 選択の視覚フィードバックを一瞬見せてから次へ
+  renderQuestion();
+  setTimeout(() => {
+    if(current < STATEMENTS.length - 1){
+      current++;
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }, 200);
+}
+
+function goBack(){
+  if(current > 0){
+    current--;
+    renderQuestion();
+  }
+}
+
+/* ================= 結果 ================= */
+function showResult(){
+  const MAX_PER_DOSHA = 60; // 15項目 × 4点
+  const score = {v:0, p:0, k:0};
+  STATEMENTS.forEach((s, i) => {
+    if(answers[i] !== null) score[s.d] += RATINGS[answers[i]].score;
+  });
+  const total = score.v + score.p + score.k;
+
+  let pct, typeKey;
+  const sorted = Object.entries(score).sort((a,b) => b[1] - a[1]);
+  const [top, second, third] = sorted;
+
+  if(total === 0){
+    // すべて「あてはまらない」だった場合
+    pct = {v:33, p:33, k:34};
+    typeKey = "vpk";
+  } else {
+    pct = {
+      v: Math.round(score.v / total * 100),
+      p: Math.round(score.p / total * 100),
+      k: Math.round(score.k / total * 100)
+    };
+    /* タイプ判定（比率ベース）
+       ・トリドーシャ：3位が1位の90%以上（3つがほぼ同点のときだけ）
+       ・複合タイプ  ：2位が1位の80%以上
+       ・単独タイプ  ：それ以外                     */
+    if(third[1] / top[1] >= 0.9){
+      typeKey = "vpk";
+    } else if(second[1] / top[1] >= 0.8){
+      typeKey = ["vp","pk","vk"].find(k => k.includes(top[0]) && k.includes(second[0]));
+    } else {
+      typeKey = top[0];
+    }
+  }
+  const info = TYPE_INFO[typeKey];
+
+  $("quiz-screen").classList.add("hidden");
+  $("result-screen").classList.remove("hidden");
+  $("explain-area").classList.remove("hidden");
+
+  $("result-type").textContent = info.name;
+  $("result-type").className = "result-type " + info.cls;
+
+  // 複合・トリドーシャでも最優勢ドーシャを明示する
+  const dom = $("result-dominant");
+  if(typeKey.length > 1 && total > 0 && top[1] > second[1]){
+    dom.textContent = `（最も優勢なのは ${DOSHA_NAME[top[0]]} です）`;
+    dom.classList.remove("hidden");
+  } else {
+    dom.textContent = "";
+    dom.classList.add("hidden");
+  }
+
+  $("result-sub").textContent =
+    `ヴァータ ${score.v}点 ／ ピッタ ${score.p}点 ／ カパ ${score.k}点（各${MAX_PER_DOSHA}点満点）`;
+  $("result-comment").innerHTML = info.comment;
+
+  $("pct-v").textContent = pct.v + "%";
+  $("pct-p").textContent = pct.p + "%";
+  $("pct-k").textContent = pct.k + "%";
+
+  // 優勢ドーシャの解説を自動で開く
+  ["v","p","k"].forEach(d => { $("detail-" + d).open = typeKey.includes(d); });
+
+  window.scrollTo({top:0, behavior:"smooth"});
+
+  // バーをアニメーション表示
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      $("bar-v").style.width = pct.v + "%";
+      $("bar-p").style.width = pct.p + "%";
+      $("bar-k").style.width = pct.k + "%";
+    }, 100);
+  });
+}
+
+function restart(){
+  $("bar-v").style.width = "0";
+  $("bar-p").style.width = "0";
+  $("bar-k").style.width = "0";
+  startQuiz();
+}
+</script>
+</body>
+</html>
