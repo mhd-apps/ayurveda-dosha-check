@@ -273,7 +273,7 @@
     </div>
 
     <div class="result-comment" id="result-comment"></div>
-    <button class="btn secondary" onclick="window.print()">🖨️ 結果を印刷（PDF保存）</button>
+    <button class="btn secondary" onclick="printResult()">🖨️ 結果を印刷（PDF保存）</button>
     <button class="btn secondary" onclick="restart()">もう一度診断する</button>
   </div>
 
@@ -665,6 +665,26 @@ function restart(){
   $("bar-p").style.width = "0";
   $("bar-k").style.width = "0";
   startQuiz();
+}
+
+/* ================= 印刷 =================
+   iPhoneのChromeやアプリ内ブラウザ（LINE等）は
+   window.print() が動かないため、手順を案内する */
+function printResult(){
+  const ua = navigator.userAgent;
+  const isInApp = /Line\/|FBAN|FBAV|Instagram|Twitter|TikTok/i.test(ua);
+  const isIosChrome = /CriOS|FxiOS|EdgiOS/.test(ua);  // iOSのChrome/Firefox/Edge
+  if(isInApp || isIosChrome){
+    alert(
+      "お使いのブラウザでは印刷機能が利用できません。\n\n" +
+      "【iPhone・iPadの場合】\n" +
+      "Safariでこのページを開き、画面下の共有ボタン（□↑）から「プリント」を選んでください。\n\n" +
+      "【LINEなどアプリから開いた場合】\n" +
+      "画面右下や右上のメニューから「ブラウザで開く」「Safariで開く」を選んでから、印刷してください。"
+    );
+    return;
+  }
+  window.print();
 }
 </script>
 </body>
